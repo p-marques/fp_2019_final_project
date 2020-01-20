@@ -19,12 +19,11 @@ class Main_Menu:
   def add_buttons(self, pos, text):
     self.buttons.append(Button(pos, self.buttons_width, self.buttons_height, text))
 
-  def display(self, screen, font):
-    for i in range(0, len(self.buttons)):
-      self.buttons[i].display(screen)
-      self.buttons[i].display_text(screen, font)
-
   def handle_clicks(self, mouse_pos):
     for btn in self.buttons:
       if btn.player_clicked_btn(mouse_pos):
         return btn.text
+
+  def display(self, screen, font):
+    for i in range(0, len(self.buttons)):
+      self.buttons[i].display(screen, font)
