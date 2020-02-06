@@ -8,10 +8,7 @@ class Button:
     self.text = text_in
 
   def player_clicked_btn(self, pos):
-    if self.rect.collidepoint(pos):
-      return True
-    else:
-      return False
+    return self.rect.collidepoint(pos)
 
   def display(self, screen, font):
     if self.rect.collidepoint(pygame.mouse.get_pos()):
@@ -19,5 +16,9 @@ class Button:
     else:
       self.color = (160, 160, 0)
 
+    text_surface = font.render(self.text, True, self.color)
+    text_rect = text_surface.get_rect()
+    text_rect.center = self.rect.center
+    screen.blit(text_surface, text_rect)
+
     pygame.draw.rect(screen, self.color, self.rect, 1)
-    font.render_to(screen, (self.rect.x + 10, self.rect.y + 10), self.text, self.color)

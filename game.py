@@ -1,124 +1,161 @@
 import pygame
 import random
-import numpy
 
 from button import Button
 from card import Card
+from nugget import Nugget
 
 class Game:
   tick = 0
-  naked_cards = []
-  symbols = ["square", "triangle", "circle"]
+  naked_cards_index = []
+  cards_removed_count = 0
 
   def __init__(self, size, screen=(1280, 720)):
+    self.grats_font = pygame.font.Font("NotoSans-Regular.ttf", 40)
     self.size = size
     self.exit_btn = Button((10, screen[1] - 50), 140, 40, "EXIT GAME")
-    self.board_size = self.get_board_size(screen)
-    self.card_size = self.get_cards_size()
-    self.cards = self.get_cards(screen)
+    self.board_size = self.calculate_board_size(screen)
+    self.card_size = self.calculate_card_size()
+    self.nuggets = self.generate_nuggets()
+    self.cards = self.generate_cards(screen)
     self.score = 0
     self.picks_since_last_correct = 0
 
-  def get_board_size(self, screen):
-    return (screen[0] / 2, screen[1] - 50)
+  def calculate_board_size(self, screen):
+    return screen[0] / 2, screen[1] - 50
 
-  def get_cards_size(self):
-    return ( ((self.board_size[0] / self.size[0])), ((self.board_size[1] / self.size[1])) )
+  def calculate_card_size(self):
+    return self.board_size[0] / self.size[0], self.board_size[1] / self.size[1]
 
-  def get_cards(self, screen):
-    r = 0
+  # Generate the correct number of nuggets according to game size
+  def generate_nuggets(self):
+    n = []
+
+    for i in range(0, self.size[0] * self.size[1]):
+      if i % 2 == 0:
+        symbol = self.get_rand_symbol()
+        color = self.get_rand_color()
+
+      n.append(Nugget(symbol, color))
+
+    random.shuffle(n)
+
+    return n
+
+  def get_random_nugget(self):
+    i = random.randint(0, len(self.nuggets) - 1)
+    return self.nuggets.pop(i)
+
+  # Generates cards
+  # Calculates card positions relative to board size
+  def generate_cards(self, screen):
     cards = []
     spacing = 4
-    counter = 0
-
-    color = self.get_rand_color()
-    symbol = self.get_rand_symbol()
 
     for i in range(0, self.size[1]):
       row = []
       for j in range(0, self.size[0]):
-        if (counter == 2):
-          color = self.get_rand_color()
-          symbol = self.get_rand_symbol()
-          counter = 0
-
         pos_x = (screen[0] / 2) - (self.board_size[0] / 2) + (self.card_size[0] * j) + (spacing * j) - (spacing / self.card_size[0])
         pos_y = (screen[1] / 2) - (self.board_size[1] / 2) + (self.card_size[1] * i) + (spacing * i) - (spacing / self.card_size[1])
-        c = Card(r + 1, pos_x, pos_y, self.card_size[0], self.card_size[1], symbol, color)
+        c = Card(pos_x, pos_y, self.card_size[0], self.card_size[1], self.get_random_nugget())
         row.append(c)
-        counter += 1
-        r += 1
 
       cards.append(row)
 
     return cards
 
   def get_rand_color(self):
-    return (random.randint(40, 255), random.randint(40, 255), random.randint(40, 255))
+    return random.randint(40, 255), random.randint(40, 255), random.randint(40, 255)
 
-  def get_rand_symbol(self):
-    return random.randint(0, 2)
+  def get_rand_symbol(self): # 0 -> Square, 1 -> Triangle, 2 -> Circle, 3 -> kite
+    return random.randint(0, 3)
 
   # Returns answer to 'keep playing?'
   def handle_click(self, pos):
     if self.exit_btn.player_clicked_btn(pos):
       return False
 
+    # checks cards for clicks
+    # saves current time if 2 cards are selected
     for i in range(0, len(self.cards)):
       for j in range(0, len(self.cards[i])):
-        if len(self.naked_cards) < 2 and self.cards[i][j].handle_click(pos):
-          self.naked_cards.append(self.cards[i][j])
-          if len(self.naked_cards) == 2:
+        if len(self.naked_cards_index) < 2 and self.cards[i][j].handle_click(pos):
+          index = (i, j)
+          if index not in self.naked_cards_index:
+            self.naked_cards_index.append((i, j))
+          if len(self.naked_cards_index) == 2:
             self.tick = pygame.time.get_ticks()
 
     return True
 
-  def get_card_index(self, id):
-    for i in range(0, len(self.cards)):
-      for j in range(0, len(self.cards[i])):
-        if self.cards[i][j].id == id:
-          return (i, j)
-
-  def remove_naked_cards(self):
-    for card in self.naked_cards:
-      i = self.get_card_index(card.id)
-      self.cards[i[0]].pop(i[1])
-
   def update_score(self, score_to_add):
-    if score_to_add < 0 and self.score - score_to_add < 0:
+    if self.score + score_to_add < 0:
       self.score = 0
-      return
+    else:
+      self.score += score_to_add
 
-    self.score += score_to_add
+  def deactivate_naked_cards(self):
+    for card_index in self.naked_cards_index:
+      self.cards[card_index[0]][card_index[1]].deactivate_card()
+
+    self.cards_removed_count += 2
 
   def compare_cards(self):
-    if self.naked_cards[0].symbol == self.naked_cards[1].symbol and self.naked_cards[0].color == self.naked_cards[1].color:
+    card_A = self.cards[self.naked_cards_index[0][0]][self.naked_cards_index[0][1]]
+    card_B = self.cards[self.naked_cards_index[1][0]][self.naked_cards_index[1][1]]
+    
+    if card_A.nugget.symbol == card_B.nugget.symbol and card_A.nugget.color == card_B.nugget.color:
       self.picks_since_last_correct = 0
       return True
 
     self.picks_since_last_correct += 1
     if self.picks_since_last_correct >= 2:
-      self.update_score(-20 * self.picks_since_last_correct)
+      self.update_score(-20 * (self.picks_since_last_correct - 1))
+
     return False
 
   def track_naked_cards(self):
     if pygame.time.get_ticks() - self.tick > 1500:
       if self.compare_cards():
-        self.picks_since_last_correct = 0
         self.update_score(100)
-        self.remove_naked_cards()
+        self.deactivate_naked_cards()
+    
+      for card_index in self.naked_cards_index:
+        self.cards[card_index[0]][card_index[1]].show_card()
 
-      for card in self.naked_cards:
-        card.show_card()
+      self.naked_cards_index = []
 
-      self.naked_cards = []
+  # Display game over screen. Centers text correctly according to screen size
+  def display_game_over(self, screen, res):
+    grats_surface = self.grats_font.render("Congratulations! You Win!", True, (160, 160, 0))
+    grats_rect = grats_surface.get_rect()
+    grats_rect.center = int(res[0] / 2), int(res[1] / 2) - grats_rect.height / 2
+    screen.blit(grats_surface, grats_rect)
 
-  def display(self, screen, font):
-    font.render_to(screen, (10, 10), str(self.score), (160, 160, 0))
+    self.display_score(screen, self.grats_font, res, True)
+
+  # Display score. Position and font change when it's game over
+  def display_score(self, screen, font, res, game_over = False):
+    score_surface = font.render(f"Score: {str(self.score)}", True, (160, 160, 0))
+    score_rect = score_surface.get_rect()
+
+    if game_over:
+      score_rect.center = int(res[0] / 2), int(res[1] / 2) + score_rect.height / 2
+    else:
+      score_rect.topleft = (10, 10)
+
+    screen.blit(score_surface, score_rect)
+
+  def display(self, screen, font, res):
     self.exit_btn.display(screen, font)
 
-    if len(self.naked_cards) == 2:
+    if len(self.naked_cards_index) == 2:
       self.track_naked_cards()
+    
+    if self.cards_removed_count == self.size[0] * self.size[1]:
+      self.display_game_over(screen, res)
+    else:
+      self.display_score(screen, font, res)
 
     # Display cards
     for i in range(0, len(self.cards)):

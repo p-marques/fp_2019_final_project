@@ -2,41 +2,50 @@ import pygame
 
 class Card:
   show = True
-  color = (0, 0, 0)
-  id = 0
-  symbol = 0
+  active = True
+  tick = 0
 
-  def __init__(self, id, pos_x, pos_y, width, height, symbol, color):
+  def __init__(self, pos_x, pos_y, width, height, in_nugget):
     self.rect = pygame.Rect(pos_x, pos_y, width, height)
-    self.symbol = symbol
-    self.color = color
-    self.id = id
+    self.rect_inner = self.get_inner_rect()
+    self.nugget = in_nugget
 
+  # Aesthetic reasons
+  def get_inner_rect(self):
+    rect = self.rect.copy()
+    rect.width -= rect.width * 0.12
+    rect.height -= rect.height * 0.12
+    rect.center = self.rect.center
+
+    return rect
+
+  # Player clicked the card?
   def handle_click(self, pos):
-    if self.show and self.rect.collidepoint(pos):
+    if not self.active:
+      return False
+    elif self.rect.collidepoint(pos):
       self.show = False
       return True
-
-    return False
 
   def show_card(self):
     self.show = True
 
-  def display(self, screen):
-    if (self.show):
-      pygame.draw.rect(screen, (0, 255, 0), self.rect, 0)
-    else:
-      pygame.draw.rect(screen, self.color, self.rect, 3)
-      center = (int(self.rect.x + (self.rect.width / 2)), int(self.rect.y + (self.rect.height / 2)))
-      radius = int(self.rect.width / 2)
-      if self.symbol == 0:  # square
-        square = pygame.Rect((center[0] - radius / 2), (center[1] - radius / 2), radius, radius)
-        pygame.draw.rect(screen, self.color, square, 0)
-      elif self.symbol == 1:  # triangle
-        triangle = ( (center[0], center[1] - radius / 2), ( center[0] - radius / 2, center[1] + radius / 2), ( center[0] + radius / 2, center[1] + radius / 2) )
-        pygame.draw.polygon(screen, self.color, triangle)
-      elif self.symbol == 2:  # circle
-        pygame.draw.circle(screen, self.color, center, int(radius / 2))
+  def deactivate_card(self):
+    self.active = False
 
-  def __str__(self):
-    return f"Cards id:{self.id}"
+  def display(self, screen):
+    if not self.active: # If card is not active it doesn't get displayed
+      return
+
+    if (self.show):
+      color = (0, 150, 80)
+      color_2 = (0, 190, 0)
+      if self.rect.collidepoint(pygame.mouse.get_pos()): # Hover color change
+        color = (255, 255, 255)
+        color_2 = (200, 200, 200)
+
+      pygame.draw.rect(screen, color, self.rect, 0)
+      pygame.draw.rect(screen, color_2, self.rect_inner, 0)
+
+    else:
+      self.nugget.display(screen, self.rect)

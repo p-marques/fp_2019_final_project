@@ -23,7 +23,7 @@ def main():
   # Load Splash Image
   splash_img = pygame.image.load("shuffle.png")
 
-  font = pygame.freetype.Font("NotoSans-Regular.ttf", 20)
+  font = pygame.font.Font("NotoSans-Regular.ttf", 20)
 
   game = None
   action = None
@@ -49,10 +49,10 @@ def main():
     screen.fill((0, 0, 20))
 
     if (not playing):
-      screen.blit(splash_img, ((res[0] / 2) - (splash_img_x / 2), (res[1] / 3) - (splash_img_y / 2))) # Display Splash Image
+      screen.blit(splash_img, (int(res[0] / 2) - int(splash_img_x / 2), int(res[1] / 3) - int(splash_img_y / 2))) # Display Splash Image
       main_menu.display(screen, font)
     else:
-      game.display(screen, font)
+      game.display(screen, font, res)
 
     pygame.display.flip()
 

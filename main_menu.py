@@ -3,7 +3,7 @@ from button import Button
 class Main_Menu:
   buttons = []
   buttons_width = 200
-  buttons_height = 40
+  buttons_height = 48
 
   def __init__(self, screen_res):
     self.create_buttons(screen_res)
