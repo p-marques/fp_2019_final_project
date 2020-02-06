@@ -21,9 +21,9 @@ def main():
   main_menu = Main_Menu(res)
 
   # Load Splash Image
-  splash_img = pygame.image.load("shuffle.png")
+  splash_img = pygame.image.load("resources/shuffle.png")
 
-  font = pygame.font.Font("NotoSans-Regular.ttf", 20)
+  font = pygame.font.Font("resources/NotoSans-Regular.ttf", 20)
 
   game = None
   action = None
