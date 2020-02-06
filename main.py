@@ -14,9 +14,13 @@ def main():
   pygame.init()
   # Define the size/resolution of our window
   res = (1280, 720)
-  # Create a window and a display surface
-  screen = pygame.display.set_mode(res)
 
+  # Create a window and a display surface
+  # Caption and icon
+  pygame.display.set_caption("Shuffle")
+  pygame.display.set_icon(pygame.image.load("resources/shuffle_icon.png"))
+  screen = pygame.display.set_mode(res)
+  
   # Main Menu
   main_menu = Main_Menu(res)
 
