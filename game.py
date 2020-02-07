@@ -10,16 +10,18 @@ class Game:
   naked_cards_index = []
   cards_removed_count = 0
 
-  def __init__(self, size, screen=(1280, 720)):
+  def __init__(self, size, high_scores_manager, in_screen=(1280, 720)):
     self.grats_font = pygame.font.Font("resources/fonts/NotoSans-Regular.ttf", 40)
     self.size = size
-    self.exit_btn = Button((10, screen[1] - 50), 140, 40, "EXIT GAME")
-    self.board_size = self.calculate_board_size(screen)
+    self.hs_manager = high_scores_manager
+    self.exit_btn = Button((10, in_screen[1] - 50), 140, 40, "EXIT GAME")
+    self.board_size = self.calculate_board_size(in_screen)
     self.card_size = self.calculate_card_size()
     self.nuggets = self.generate_nuggets()
-    self.cards = self.generate_cards(screen)
+    self.cards = self.generate_cards(in_screen)
     self.score = 0
     self.picks_since_last_correct = 0
+    self.upload_hs_btn = Button((-10, -10), 360, 60, "Upload High Score")
 
   def calculate_board_size(self, screen):
     return screen[0] / 2, screen[1] - 50
@@ -75,6 +77,10 @@ class Game:
     if self.exit_btn.player_clicked_btn(pos):
       return False
 
+    if self.upload_hs_btn.player_clicked_btn(pos):
+      self.upload_high_score()
+      return False
+
     # checks cards for clicks
     # saves current time if 2 cards are selected
     for i in range(0, len(self.cards)):
@@ -125,6 +131,19 @@ class Game:
 
       self.naked_cards_index = []
 
+  def upload_high_score(self):
+    self.hs_manager.post_high_score(self.score, self.size)
+
+  def display_ranked_score(self, screen, res):
+    score_surface = self.grats_font.render(f"A Ranked Score of {str(self.score * self.size[0] * self.size[1])} is in the Top 10!", True, (160, 160, 0))
+    score_rect = score_surface.get_rect()
+    score_rect.center = int(res[0] / 2), (int(res[1] / 2) + score_rect.height + 10)
+    screen.blit(score_surface, score_rect)
+
+    self.upload_hs_btn.rect.centerx = score_rect.centerx
+    self.upload_hs_btn.rect.bottom = res[1] - 10
+    self.upload_hs_btn.display(screen, self.grats_font)
+
   # Display game over screen. Centers text correctly according to screen size
   def display_game_over(self, screen, res):
     grats_surface = self.grats_font.render("Congratulations! You Win!", True, (160, 160, 0))
@@ -133,6 +152,10 @@ class Game:
     screen.blit(grats_surface, grats_rect)
 
     self.display_score(screen, self.grats_font, res, True)
+
+    # Check to see if player is on top 10
+    if self.hs_manager.is_player_in_top_10(self.size, self.score):
+      self.display_ranked_score(screen, res)
 
   # Display score. Position and font change when it's game over
   def display_score(self, screen, font, res, game_over = False):
@@ -145,6 +168,7 @@ class Game:
       score_rect.topleft = (10, 10)
 
     screen.blit(score_surface, score_rect)
+    
 
   def display(self, screen, font, res):
     self.exit_btn.display(screen, font)

@@ -5,6 +5,7 @@ import math
 from music_player import Music_Player
 from main_menu import Main_Menu
 from game import Game
+from high_scores_manager import High_Scores_Manager
 
 def main():
   playing = False
@@ -33,6 +34,9 @@ def main():
 
   font = pygame.font.Font("resources/fonts/NotoSans-Regular.ttf", 20)
 
+  # Start High Scores Manager
+  hs_manager = High_Scores_Manager()
+
   game = None
   action = None
 
@@ -46,11 +50,13 @@ def main():
         music_player.handle_clicks(pos)
         if (not playing):
           action = main_menu.handle_clicks(pos)
-          if action == "EXIT":
+          if action == "exit":
             exit()
+          elif action == "high_scores":
+            hs_manager.toggle_display()
           elif (action != None):
             size = action.split('x')
-            game = Game((int(size[0]), int(size[1])), res)
+            game = Game((int(size[0]), int(size[1])), hs_manager, res)
             playing = True
         else:
           playing = game.handle_click(pos)
@@ -65,8 +71,9 @@ def main():
     music_player.display(screen)
 
     if (not playing):
-      screen.blit(splash_img, (int(res[0] / 2) - int(splash_img_x / 2), int(res[1] / 3) - int(splash_img_y / 2))) # Display Splash Image
+      screen.blit(splash_img, (int(res[0] / 2) - int(splash_img_x / 2), int(res[1] / 4) - int(splash_img_y / 2))) # Display Splash Image
       main_menu.display(screen, font)
+      hs_manager.display_high_scores(screen, font)
     else:
       game.display(screen, font, res)
 

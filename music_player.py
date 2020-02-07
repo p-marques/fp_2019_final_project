@@ -1,4 +1,4 @@
-from pygame import mixer, font as pyfont
+import pygame
 from os import walk
 from math import ceil as round_up
 
@@ -33,14 +33,14 @@ class Music_Player:
         if len(self.music_files) == 0:
             return False
 
-        mixer.music.unload()
+        #pygame.mixer.music.unload()
 
         if self.current_music_index < len(self.music_files) - 1:
             self.current_music_index += 1
         else:
             self.current_music_index = 0
 
-        mixer.music.load(f"{self.path}{self.music_files[self.current_music_index]}")
+        pygame.mixer.music.load(f"{self.path}{self.music_files[self.current_music_index]}")
 
         return True
 
@@ -52,7 +52,7 @@ class Music_Player:
         if new_volume > 100: 
             new_volume = 100
 
-        mixer.music.set_volume(new_volume / 100)
+        pygame.mixer.music.set_volume(new_volume / 100)
 
     # See comment on increase_volume
     def lower_volume(self, value):
@@ -61,24 +61,24 @@ class Music_Player:
         if new_volume < 0: 
             new_volume = 0
 
-        mixer.music.set_volume(new_volume / 100)
+        pygame.mixer.music.set_volume(new_volume / 100)
 
     def set_volume(self, new_volume_lvl):
-        mixer.music.set_volume(new_volume_lvl)
+        pygame.mixer.music.set_volume(new_volume_lvl)
 
     def toggle_play(self):
         if self.paused_by_player:
-            mixer.music.unpause()
+            pygame.mixer.music.unpause()
         else:
-            mixer.music.pause()
+            pygame.mixer.music.pause()
 
         self.paused_by_player = not self.paused_by_player
 
     def play(self):
-        mixer.music.play()
+        pygame.mixer.music.play()
 
     def is_busy(self):
-        return mixer.music.get_busy()
+        return pygame.mixer.music.get_busy()
 
     def create_player_buttons(self, res):
         self.buttons.append(Button((-10, 10), 31, 31, "\u2B89", "sound_up")) # Sound up
@@ -109,7 +109,7 @@ class Music_Player:
 
     # Between 0.0 and 1.0
     def get_volume(self):
-        return mixer.music.get_volume()
+        return pygame.mixer.music.get_volume()
 
     def display_volume(self, screen):
         txt = f"{str(round_up(self.get_volume() * 100))}%"
@@ -121,7 +121,7 @@ class Music_Player:
 
     def display(self, screen):
         if self.font == None: 
-            self.font = pyfont.Font("resources/fonts/seguisym.ttf", 16) # Font loaded once
+            self.font = pygame.font.Font("resources/fonts/seguisym.ttf", 16) # Font loaded once
 
         for i in range(0, len(self.buttons)):
             self.buttons[i].display(screen, self.font)
