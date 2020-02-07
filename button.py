@@ -3,9 +3,10 @@ import pygame
 class Button:
   color = (160, 160, 0)
 
-  def __init__(self, pos, width, height, text_in):
+  def __init__(self, pos, width, height, text_in, in_action = None):
     self.rect = pygame.Rect(pos, (width, height))
     self.text = text_in
+    self.action = in_action
 
   def player_clicked_btn(self, pos):
     return self.rect.collidepoint(pos)
@@ -20,5 +21,5 @@ class Button:
     text_rect = text_surface.get_rect()
     text_rect.center = self.rect.center
     screen.blit(text_surface, text_rect)
-
+    
     pygame.draw.rect(screen, self.color, self.rect, 1)

@@ -2,6 +2,7 @@ import pygame
 import pygame.freetype
 import math
 
+from music_player import Music_Player
 from main_menu import Main_Menu
 from game import Game
 
@@ -24,10 +25,13 @@ def main():
   # Main Menu
   main_menu = Main_Menu(res)
 
+  # Start Music Player
+  music_player = Music_Player(res)
+
   # Load Splash Image
   splash_img = pygame.image.load("resources/shuffle.png")
 
-  font = pygame.font.Font("resources/NotoSans-Regular.ttf", 20)
+  font = pygame.font.Font("resources/fonts/NotoSans-Regular.ttf", 20)
 
   game = None
   action = None
@@ -39,6 +43,7 @@ def main():
         exit()
       if (event.type == pygame.MOUSEBUTTONDOWN):
         pos = pygame.mouse.get_pos()
+        music_player.handle_clicks(pos)
         if (not playing):
           action = main_menu.handle_clicks(pos)
           if action == "EXIT":
@@ -51,6 +56,13 @@ def main():
           playing = game.handle_click(pos)
 
     screen.fill((0, 0, 20))
+
+    # Music
+    if not music_player.is_busy():
+      music_player.load_next_song()
+      music_player.play()
+
+    music_player.display(screen)
 
     if (not playing):
       screen.blit(splash_img, (int(res[0] / 2) - int(splash_img_x / 2), int(res[1] / 3) - int(splash_img_y / 2))) # Display Splash Image

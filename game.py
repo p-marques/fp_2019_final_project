@@ -11,7 +11,7 @@ class Game:
   cards_removed_count = 0
 
   def __init__(self, size, screen=(1280, 720)):
-    self.grats_font = pygame.font.Font("resources/NotoSans-Regular.ttf", 40)
+    self.grats_font = pygame.font.Font("resources/fonts/NotoSans-Regular.ttf", 40)
     self.size = size
     self.exit_btn = Button((10, screen[1] - 50), 140, 40, "EXIT GAME")
     self.board_size = self.calculate_board_size(screen)
